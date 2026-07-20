@@ -184,7 +184,7 @@
               access, and a GPU partition view for picking where to submit next. Actively maintained and used daily by
               fellow researchers and others working on SLURM clusters.
             </p>
-            <div class="entry-badges" data-repo="dhimitriosduka1/sCode" data-openvsx="DhimitriosDuka/slurm-cluster-manager">
+            <div class="entry-badges" data-repo="dhimitriosduka1/sCode" data-openvsx="DhimitriosDuka/slurm-cluster-manager" data-vsmarketplace="DhimitriosDuka.slurm-cluster-manager">
               <span class="repo-badge">
                 <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
                   <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z" />
@@ -300,13 +300,39 @@
 
     document.querySelectorAll('.entry-badges[data-openvsx]').forEach((el) => {
       const openVsxId = el.dataset.openvsx;
+      const vsMarketplaceId = el.dataset.vsmarketplace;
 
-      fetch(`https://open-vsx.org/api/${openVsxId}`)
+      const openVsxDownloads = fetch(`https://open-vsx.org/api/${openVsxId}`)
         .then((res) => res.json())
-        .then((data) => {
+        .then((data) => Number(data.downloadCount) || 0)
+        .catch(() => 0);
+
+      const vsMarketplaceDownloads = vsMarketplaceId
+        ? fetch('https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json;api-version=3.0-preview.1',
+            },
+            body: JSON.stringify({
+              filters: [{ criteria: [{ filterType: 7, value: vsMarketplaceId }] }],
+              flags: 914,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              const stats = data.results[0].extensions[0].statistics;
+              const downloadCount = stats.find((s) => s.statisticName === 'downloadCount');
+              return Number(downloadCount && downloadCount.value) || 0;
+            })
+            .catch(() => 0)
+        : Promise.resolve(0);
+
+      Promise.all([openVsxDownloads, vsMarketplaceDownloads])
+        .then(([openVsx, vsMarketplace]) => {
           const downloadsEl = el.querySelector('[data-field="downloads"]');
           if (downloadsEl) {
-            downloadsEl.textContent = data.downloadCount.toLocaleString();
+            downloadsEl.textContent = (openVsx + vsMarketplace).toLocaleString();
           }
         })
         .catch(() => {});
