@@ -288,6 +288,12 @@
   </div>
 
   <script>
+    function formatCount(n) {
+      if (n >= 1e6) return (Math.floor(n / 1e4) / 100) + 'M';
+      if (n >= 1e3) return (Math.floor(n / 10) / 100) + 'k';
+      return String(n);
+    }
+
     document.querySelectorAll('.entry-badges[data-repo]').forEach((el) => {
       fetch(`https://api.github.com/repos/${el.dataset.repo}`)
         .then((res) => res.json())
@@ -332,7 +338,7 @@
         .then(([openVsx, vsMarketplace]) => {
           const downloadsEl = el.querySelector('[data-field="downloads"]');
           if (downloadsEl) {
-            downloadsEl.textContent = (openVsx + vsMarketplace).toLocaleString();
+            downloadsEl.textContent = formatCount(openVsx + vsMarketplace);
           }
         })
         .catch(() => {});
