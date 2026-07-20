@@ -314,23 +314,9 @@
         .catch(() => 0);
 
       const vsMarketplaceDownloads = vsMarketplaceId
-        ? fetch('https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json;api-version=3.0-preview.1',
-            },
-            body: JSON.stringify({
-              filters: [{ criteria: [{ filterType: 7, value: vsMarketplaceId }] }],
-              flags: 914,
-            }),
-          })
+        ? fetch('data/vsmarketplace-stats.json')
             .then((res) => res.json())
-            .then((data) => {
-              const stats = data.results[0].extensions[0].statistics;
-              const downloadCount = stats.find((s) => s.statisticName === 'downloadCount');
-              return Number(downloadCount && downloadCount.value) || 0;
-            })
+            .then((data) => Number(data[vsMarketplaceId] && data[vsMarketplaceId].downloadCount) || 0)
             .catch(() => 0)
         : Promise.resolve(0);
 
