@@ -396,6 +396,12 @@ a.repo-badge:hover {
   color: var(--tag-oral-color);
 }
 
+.preprint-tag {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text-light-alt);
+}
+
 .entry-description {
   margin-top: 8px;
   font-size: 13.5px;
